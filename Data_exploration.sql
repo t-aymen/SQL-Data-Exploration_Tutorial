@@ -13,17 +13,6 @@ ORDER BY 1, 2;
 -- Total Cases VS Total Deaths
 SELECT
 	location,
-	YEAR(date) AS year,
-	AVG(CAST(total_cases AS bigint)) AS total_cases,
-	AVG(CAST(total_deaths AS bigint)) AS total_deaths,
-	ROUND(AVG(CAST(total_deaths AS float)) / AVG(CAST(total_cases AS float)) * 100, 2) as total_death_percentage
-FROM covid_deaths
-WHERE total_cases IS NOT NULL AND total_deaths IS NOT NULL
-GROUP BY location, YEAR(date)
-ORDER BY 1, 2
-
-SELECT
-	location,
 	date,
 	total_cases,
 	total_deaths,
@@ -46,17 +35,6 @@ FROM covid_deaths
 WHERE total_cases IS NOT NULL AND location = 'Germany'
 ORDER BY 1, 2
 
-SELECT
-	location,
-	YEAR(date) AS year,
-	AVG(CAST(total_cases AS bigint)) AS total_cases,
-	AVG(CAST(population AS bigint)) AS avg_population,
-	ROUND(AVG(CAST(total_cases AS float)) / AVG(CAST(population AS float)) * 100, 2) as total_cases_percentage
-FROM covid_deaths
-WHERE total_cases IS NOT NULL
-GROUP BY location, YEAR(date)
-ORDER BY 1, 2
-
 -- Countries with highest infection rate per population
 SELECT
 	location,
@@ -67,15 +45,6 @@ FROM covid_deaths
 WHERE total_cases IS NOT NULL AND continent IS NOT NULL
 GROUP BY location, population
 ORDER BY 4 DESC
-
--- Countries with highest covid deathrate
-SELECT
-	location,
-	MAX(CAST(total_deaths AS bigint)) AS highest_death_count
-FROM covid_deaths
-WHERE total_deaths IS NOT NULL AND continent IS NOT NULL
-GROUP BY location
-ORDER BY 2 DESC
 
 -- Continent with highest covid deathrate
 SELECT
@@ -95,17 +64,12 @@ WHERE continent IS NULL AND location NOT IN ('World', 'European Union', 'High in
 GROUP BY location
 ORDER BY 2 DESC
 
-SELECT
-	*
-FROM covid_deaths
-WHERE location = 'European Union'
-
 -- Covid deathrate by social class
 SELECT
 	location,
 	MAX(CAST(total_deaths AS bigint)) AS highest_death_count
 FROM covid_deaths
-WHERE location = 'High income' OR location = 'Upper middle income' OR location = 'Lower middle income' OR location = 'Low income'
+WHERE location IN ('High income', 'Upper middle income', 'Lower middle income', 'Low income', 'World')
 GROUP BY location
 ORDER BY 2 DESC
 
@@ -162,14 +126,11 @@ WHERE D.continent IS NOT NULL
 )
 SELECT
 	*, 
-	CASE
-		WHEN total_rolling_vaccinations > population THEN 100.0
-		ELSE ROUND(total_rolling_vaccinations / CAST(population AS float) * 100, 2)
+	ROUND(total_rolling_vaccinations / CAST(population AS float) * 100, 2)
 	END AS percentage_vaccinations
 FROM population_vs_vaccinations
-WHERE location = 'Germany'
 
--- USING TEMP
+-- USING TEMP Table
 DROP TABLE IF EXISTS #percent_population_vaccinated
 CREATE TABLE #percent_population_vaccinated (
 	continent nvarchar(255),
@@ -196,9 +157,8 @@ SELECT
 	*,
 	ROUND(CAST(total_rolling_vaccination AS float) / population * 100, 3) AS vaccination_percentage
 FROM #percent_population_vaccinated
-WHERE new_vaccinations IS NOT NULL AND location = 'France' AND YEAR(date) = 2021
 
---> Over 100% could mean that more than 1 dosage is also counted.
+--> Over 100% could mean that more than 1 dosage is also counted per vaccinated person.
 
 -- VIEWS for visualizations
 CREATE VIEW percent_population_vaccinated AS
