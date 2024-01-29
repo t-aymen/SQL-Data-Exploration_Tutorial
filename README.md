@@ -1,1 +1,1 @@
-# SQL Data Exploration
+# Covid Mortality - SQL Data Exploration
