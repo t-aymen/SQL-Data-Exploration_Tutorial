@@ -1,1 +1,1 @@
-# Covid Mortality - SQL Data Exploration
+# Coronavirus (COVID-19) Deaths
