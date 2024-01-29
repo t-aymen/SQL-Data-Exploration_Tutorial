@@ -1,1 +1,1 @@
-# Covid_Project
+# SQL Data Exploration
